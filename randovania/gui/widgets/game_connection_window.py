@@ -13,6 +13,7 @@ import randovania
 from randovania.game.game_enum import RandovaniaGame
 from randovania.game_connection.builder.connector_builder_option import ConnectorBuilderOption
 from randovania.game_connection.builder.debug_connector_builder import DebugConnectorBuilder
+from randovania.game_connection.builder.dolphin_connector_builder import DolphinConnectorBuilder
 from randovania.game_connection.builder.nintendont_connector_builder import NintendontConnectorBuilder
 from randovania.game_connection.connector.debug_remote_connector import DebugRemoteConnector
 from randovania.game_connection.connector.remote_connector import ImportantStatusMessage, RemoteConnector
@@ -238,6 +239,19 @@ class GameConnectionWindow(QtWidgets.QMainWindow, Ui_GameConnectionWindow):
                 return
             args["ip"] = new_ip
 
+        if choice == ConnectorBuilderChoice.DOLPHIN:
+            dolphin_cmd = await self._prompt_for_text(
+                "Select Dolphin Emulator",
+                "Enter the name of the Dolphin-compatible emulator to run "
+                "(e.g. 'dolpin-emu' or '/usr/bin/retroarch').\nRandovania will "
+                "automatically launch this program and connect to it.\n"
+                "If left blank, it will try to automatically detect and "
+                "connect to an already-running Dolphin.",
+            )
+            if dolphin_cmd is None:
+                return
+            args["dolphin_cmd"] = dolphin_cmd
+
         if choice == ConnectorBuilderChoice.DREAD:
             new_ip = await DreadConnectorPromptDialog.prompt(
                 parent=self,
@@ -367,6 +381,17 @@ class GameConnectionWindow(QtWidgets.QMainWindow, Ui_GameConnectionWindow):
             action = QtGui.QAction(ui.menu)
             action.setText("Open debug interface")
             action.triggered.connect(functools.partial(self.open_debug_connector_window, builder))
+            ui.menu.addAction(action)
+
+        if isinstance(builder, DolphinConnectorBuilder):
+            ui.menu.addSeparator()
+            action = QtGui.QAction(ui.menu)
+            action.setText("Start Dolphin")
+            action.triggered.connect(builder.start_dolphin)
+            ui.menu.addAction(action)
+            action = QtGui.QAction(ui.menu)
+            action.setText("Stop Dolphin")
+            action.triggered.connect(builder.stop_dolphin)
             ui.menu.addAction(action)
 
         if not randovania.is_frozen():

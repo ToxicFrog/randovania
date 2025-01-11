@@ -24,9 +24,12 @@ def _validate_range(address: int, size: int):
 
 
 class DolphinExecutor(MemoryOperationExecutor):
-    def __init__(self):
+    dolphin_cmd: str
+
+    def __init__(self, dolphin_cmd):
         super().__init__()
         self.dolphin = dolphin_memory_engine
+        self.dolphin_cmd = dolphin_cmd
         self._pid = pid.PidFile("randovania-dolphin-backend")
 
     @property
